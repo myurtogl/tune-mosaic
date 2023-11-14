@@ -6,7 +6,7 @@ from firebase_admin import auth
 app = Flask(__name__)
 
 # Initialize Firebase Admin SDK with your credentials
-cred = credentials.Certificate("/Users/zeynep/Desktop/tune-mosaic-firebase-adminsdk-twt4o-bc55e51dbc.json")
+cred = credentials.Certificate("/Users/nupelem/Desktop/tune-mosaic-firebase-adminsdk-twt4o-076c7f19ae.json") 
 firebase_admin.initialize_app(cred)
 
 # Function to register a new user and store user data in Firebase
@@ -27,6 +27,18 @@ def register_user(email, password, user_data):
     except Exception as e:
         return {'success': False, 'message': str(e)}
 
+# Function to add a single song manually
+def add_song(user_id, song_data):
+    try:
+        # Add the song data to the user's collection in the Firebase Realtime Database
+        database = firebase_admin.db.reference()
+        songs_ref = database.child('users').child(user_id).child('songs')
+        songs_ref.push().set(song_data)
+
+        return {'success': True, 'message': 'Song added successfully'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
 @app.route('/register', methods=['POST'])
 def register():
     try:
@@ -41,6 +53,24 @@ def register():
             return jsonify({'success': True, 'message': 'User registered successfully'})
         else:
             return jsonify({'success': False, 'message': registration_result['message']})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# Endpoint to add a single song manually
+@app.route('/add-song', methods=['POST'])
+def add_single_song():
+    try:
+        data = request.get_json()
+        user_id = data['user_id']
+        song_data = data['song_data']
+
+        addition_result = add_song(user_id, song_data)
+
+        if addition_result['success']:
+            return jsonify({'success': True, 'message': 'Song added successfully'})
+        else:
+            return jsonify({'success': False, 'message': addition_result['message']})
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
