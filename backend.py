@@ -39,6 +39,19 @@ def add_song(user_id, song_data):
     except Exception as e:
         return {'success': False, 'message': str(e)}
 
+# Function to add songs from a text file
+def add_songs_from_file(user_id, file_path):
+    try:
+        with open(file_path, 'r') as file:
+            # Read each line from the file and add the song to the database
+            for line in file:
+                song_data = {'name': line.strip()}
+                add_song(user_id, song_data)
+
+        return {'success': True, 'message': 'Songs added from file successfully'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
 @app.route('/register', methods=['POST'])
 def register():
     try:
@@ -71,6 +84,24 @@ def add_single_song():
             return jsonify({'success': True, 'message': 'Song added successfully'})
         else:
             return jsonify({'success': False, 'message': addition_result['message']})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# Endpoint to add songs from a text file
+@app.route('/add-songs-from-file', methods=['POST'])
+def add_songs_from_file_endpoint():
+    try:
+        data = request.get_json()
+        user_id = data['user_id']
+        file_path = data['file_path']
+
+        file_addition_result = add_songs_from_file(user_id, file_path)
+
+        if file_addition_result['success']:
+            return jsonify({'success': True, 'message': 'Songs added from file successfully'})
+        else:
+            return jsonify({'success': False, 'message': file_addition_result['message']})
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
