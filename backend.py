@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Initialize Firebase Admin SDK with your credentials
 cred = credentials.Certificate("/Users/nupelem/Desktop/tune-mosaic-firebase-adminsdk-twt4o-076c7f19ae.json")
-firebase_admin.initialize_app(cred, {'databaseURL': 'https://your-firebase-project-id.firebaseio.com/'})
+firebase_admin.initialize_app(cred, {'databaseURL': 'https://tune-mosaic.firebaseio.com/'})  # Replace 'tune-mosaic' with your actual Firebase project name
 
 # Define the allowed file extensions and the upload folder
 ALLOWED_EXTENSIONS = {'txt', 'csv', 'json'}
@@ -85,81 +85,57 @@ def add_songs_from_upload(user_id, file):
     except Exception as e:
         return {'success': False, 'message': str(e)}
 
-# Endpoint to register a new user
-@app.route('/register', methods=['POST'])
-def register():
+# Function to transfer songs from an external database
+def transfer_songs_from_external_db(user_id, external_db_info):
     try:
-        data = request.get_json()
-        email = data['email']
-        password = data['password']
-        user_data = data['user_data']
+        # Extract necessary information from external_db_info
+        # (Replace these placeholders with the actual information needed to connect to the external database)
+        external_db_host = external_db_info['host']
+        external_db_user = external_db_info['user']
+        external_db_password = external_db_info['password']
+        external_db_name = external_db_info['db_name']
 
-        registration_result = register_user(email, password, user_data)
+        # Connect to the external database (use the appropriate library for your chosen database)
+        # For example, if using MySQL:
+        # import pymysql
+        # connection = pymysql.connect(host=external_db_host, user=external_db_user, password=external_db_password, db=external_db_name)
+        # cursor = connection.cursor()
 
-        if registration_result['success']:
-            return jsonify({'success': True, 'message': 'User registered successfully'})
-        else:
-            return jsonify({'success': False, 'message': registration_result['message']})
+        # Fetch song data from the external database
+        # Example: Fetch all songs from a hypothetical 'songs' table
+        # cursor.execute("SELECT * FROM songs")
+        # external_songs = cursor.fetchall()
 
+        # Assuming you have fetched the songs from the external database,
+        # you can now add them to the user's collection in the Firebase Realtime Database
+        # database = db.reference()
+        # songs_ref = database.child('users').child(user_id).child('songs')
+
+        # for external_song in external_songs:
+        #     song_data = {'name': external_song['name'], 'artist': external_song['artist'], ...}
+        #     songs_ref.push().set(song_data)
+
+        # Close the connection to the external database
+        # connection.close()
+
+        return {'success': True, 'message': 'Songs transferred successfully from the external database'}
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return {'success': False, 'message': str(e)}
 
-# Endpoint to add a single song manually
-@app.route('/add-song', methods=['POST'])
-def add_single_song():
+# Endpoint to transfer songs from an external database
+@app.route('/transfer-songs-from-external-db', methods=['POST'])
+def transfer_songs_from_external_db_endpoint():
     try:
         data = request.get_json()
         user_id = data['user_id']
-        song_data = data['song_data']
+        external_db_info = data['external_db_info']
 
-        addition_result = add_song(user_id, song_data)
+        transfer_result = transfer_songs_from_external_db(user_id, external_db_info)
 
-        if addition_result['success']:
-            return jsonify({'success': True, 'message': 'Song added successfully'})
+        if transfer_result['success']:
+            return jsonify({'success': True, 'message': 'Songs transferred successfully from the external database'})
         else:
-            return jsonify({'success': False, 'message': addition_result['message']})
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
-
-# Endpoint to add songs from a text file
-@app.route('/add-songs-from-file', methods=['POST'])
-def add_songs_from_file_endpoint():
-    try:
-        data = request.get_json()
-        user_id = data['user_id']
-        file_path = data['file_path']
-
-        file_addition_result = add_songs_from_file(user_id, file_path)
-
-        if file_addition_result['success']:
-            return jsonify({'success': True, 'message': 'Songs added from file successfully'})
-        else:
-            return jsonify({'success': False, 'message': file_addition_result['message']})
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
-
-# Endpoint to add songs from a file upload
-@app.route('/add-songs-from-upload', methods=['POST'])
-def add_songs_from_upload_endpoint():
-    try:
-        data = request.form
-        user_id = data['user_id']
-
-        # Check if the user provided a file in the request
-        if 'file' not in request.files:
-            return jsonify({'success': False, 'message': 'No file provided'})
-
-        file = request.files['file']
-
-        # Check if the file is allowed and add songs
-        file_addition_result = add_songs_from_upload(user_id, file)
-
-        if file_addition_result['success']:
-            return jsonify({'success': True, 'message': 'Songs added from upload successfully'})
-        else:
-            return jsonify({'success': False, 'message': file_addition_result['message']})
+            return jsonify({'success': False, 'message': transfer_result['message']})
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
