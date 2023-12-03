@@ -122,6 +122,18 @@ def transfer_songs_from_external_db(user_id, external_db_info):
     except Exception as e:
         return {'success': False, 'message': str(e)}
 
+# Function to rate a song
+def rate_song(user_id, song_id, rating):
+    try:
+        # Update the rating of the song in the Firebase Realtime Database
+        database = db.reference()
+        song_ref = database.child('users').child(user_id).child('songs').child(song_id)
+        song_ref.update({'rating': rating})
+
+        return {'success': True, 'message': 'Song rated successfully'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
 # Endpoint to transfer songs from an external database
 @app.route('/transfer-songs-from-external-db', methods=['POST'])
 def transfer_songs_from_external_db_endpoint():
@@ -140,6 +152,24 @@ def transfer_songs_from_external_db_endpoint():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+# Endpoint to rate a song
+@app.route('/rate-song', methods=['POST'])
+def rate_song_endpoint():
+    try:
+        data = request.get_json()
+        user_id = data['user_id']
+        song_id = data['song_id']
+        rating = data['rating']
+
+        rating_result = rate_song(user_id, song_id, rating)
+
+        if rating_result['success']:
+            return jsonify({'success': True, 'message': 'Song rated successfully'})
+        else:
+            return jsonify({'success': False, 'message': rating_result['message']})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 if __name__ == '__main__':
     app.run(debug=True)
-
