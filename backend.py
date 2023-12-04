@@ -134,39 +134,78 @@ def rate_song(user_id, song_id, rating):
     except Exception as e:
         return {'success': False, 'message': str(e)}
 
-# Endpoint to transfer songs from an external database
-@app.route('/transfer-songs-from-external-db', methods=['POST'])
-def transfer_songs_from_external_db_endpoint():
+# Function to remove a song and its related data
+def remove_song(user_id, song_id):
     try:
-        data = request.get_json()
-        user_id = data['user_id']
-        external_db_info = data['external_db_info']
+        # Remove the song from the user's collection in the Firebase Realtime Database
+        database = db.reference()
+        song_ref = database.child('users').child(user_id).child('songs').child(song_id)
+        song_ref.delete()
 
-        transfer_result = transfer_songs_from_external_db(user_id, external_db_info)
-
-        if transfer_result['success']:
-            return jsonify({'success': True, 'message': 'Songs transferred successfully from the external database'})
-        else:
-            return jsonify({'success': False, 'message': transfer_result['message']})
-
+        return {'success': True, 'message': 'Song removed successfully'}
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return {'success': False, 'message': str(e)}
 
-# Endpoint to rate a song
-@app.route('/rate-song', methods=['POST'])
-def rate_song_endpoint():
+# Function to remove an album and its related data
+def remove_album(user_id, album_id):
+    try:
+        # Remove the album from the user's collection in the Firebase Realtime Database
+        database = db.reference()
+        album_ref = database.child('users').child(user_id).child('albums').child(album_id)
+        album_ref.delete()
+
+        # Get all songs in the album
+        songs_ref = database.child('users').child(user_id).child('songs').order_by_child('album_id').equal_to(album_id).get()
+
+        # Remove each song in the album
+        for song_id in songs_ref:
+            remove_song(user_id, song_id)
+
+        return {'success': True, 'message': 'Album removed successfully'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
+# Function to remove a performer and their related data
+def remove_performer(user_id, performer_id):
+    try:
+        # Remove the performer from the user's collection in the Firebase Realtime Database
+        database = db.reference()
+        performer_ref = database.child('users').child(user_id).child('performers').child(performer_id)
+        performer_ref.delete()
+
+        # Get all songs by the performer
+        songs_ref = database.child('users').child(user_id).child('songs').order_by_child('performer_id').equal_to(performer_id).get()
+
+        # Remove each song by the performer
+        for song_id in songs_ref:
+            remove_song(user_id, song_id)
+
+        return {'success': True, 'message': 'Performer removed successfully'}
+    except Exception as e:
+        return {'success': False, 'message': str(e)}
+
+# Endpoint to remove a song, album, or performer
+@app.route('/remove-item', methods=['POST'])
+def remove_item_endpoint():
     try:
         data = request.get_json()
         user_id = data['user_id']
-        song_id = data['song_id']
-        rating = data['rating']
+        item_type = data['item_type']  # 'song', 'album', or 'performer'
+        item_id = data['item_id']
 
-        rating_result = rate_song(user_id, song_id, rating)
-
-        if rating_result['success']:
-            return jsonify({'success': True, 'message': 'Song rated successfully'})
+        if item_type == 'song':
+            removal_result = remove_song(user_id, item_id)
+        elif item_type == 'album':
+            removal_result = remove_album(user_id, item_id)
+        elif item_type == 'performer':
+            removal_result = remove_performer(user_id, item_id)
         else:
-            return jsonify({'success': False, 'message': rating_result['message']})
+            return jsonify({'success': False, 'message': 'Invalid item type'})
+
+        if removal_result['success']:
+            return jsonify({'success': True, 'message': 'Item removed successfully'})
+        else:
+            return jsonify({'success': False, 'message': removal_result['message']})
 
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
