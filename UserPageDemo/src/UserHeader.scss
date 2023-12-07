@@ -1,0 +1,33 @@
+.user-header{
+    margin: 0px;
+    background-color: #786F80;
+    
+}
+
+.user-info{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-details{
+    display: flex;
+    align-items: center;
+    color: #111111;
+}
+
+.user-details span {
+    margin: 10px;
+    color: #111111;
+}
+
+.user-photo{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.follower-info span {
+    margin-left: 5px;
+    color: #111111;
+}
