@@ -1,40 +1,70 @@
-# Tune-Mosaic
+# Getting Started with Create React App
 
-Welcome to the tune-mosaic! This system is designed to collect and analyze liked-song data from various sources and provide users with insightful musical recommendations based on their preferences. Whether you're a music enthusiast looking to discover new tracks or a data enthusiast interested in exploring musical taste patterns, this project has something for you.
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Project Overview
+## Available Scripts
 
-In this project, we aim to:
+In the project directory, you can run:
 
-- Collect Liked-Song Data: We gather liked-song information from different platforms and sources, allowing users to consolidate their music preferences in one place.
+### `npm start`
 
-- Musical Flavor Analysis: Our system offers various types of analysis, helping users understand their musical flavor. This includes genre preferences, artist exploration, and more.
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-- Personalized Recommendations: Leveraging the collected data and analysis, we provide tailored music recommendations to users. Whether you're in the mood for something new or similar to your existing favorites, we've got you covered.
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-## Getting Started
+### `npm test`
 
-To get started with the Liked-Song Analysis and Recommendation System, follow these steps:
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-1. *Clone the Repository:* Clone this repository to your local machine using the following command:
+### `npm run build`
 
-   
-   git clone https://github.com/your-username/liked-song-analysis.git
-   
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-2. *Install Dependencies:* Navigate to the project directory and install the required dependencies by running:
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-   
-   npm install
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-   To create a react project run the following command: npx create-react-app my-app
+### `npm run eject`
 
-4. *Configuration:* Configure the system to connect to your preferred music sources and platforms by editing the configuration files (config.json).
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-5. *Run the System:* Start the system by running:
-   
-   cd /directory_name
-   npm start
-   
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-6. *Explore and Enjoy:* Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+
+### Analyzing the Bundle Size
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
