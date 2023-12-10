@@ -1,0 +1,32 @@
+.rating-interface {
+  display: flex;
+  margin: 26px 16px;
+  align-items: center;
+  background-color: #fff;
+  padding: 10px;
+  max-width: 100px;
+  margin-bottom: 1200px;
+
+}
+
+.song-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.song-item {
+  margin-bottom: 16px;
+}
+
+.rating-stars {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.star-filled {
+  color: gold;
+}
+
+.star-empty {
+  color: #ccc;
+}

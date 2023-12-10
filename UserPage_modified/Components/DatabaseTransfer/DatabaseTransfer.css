@@ -1,0 +1,44 @@
+.database-transfer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .form-container {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    padding: 20px;
+    max-width: 300px;
+    width: 100%;
+  }
+  
+  .database-transfer button {
+    background-color: green;
+    color: #fff;
+    font-size: 12px;
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.5s ease-in-out;
+  }
+  
+  .database-transfer button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .database-transfer button:hover {
+    background-color: #8aca8d;
+  }
+  
+  .database-transfer.transferring button {
+    background-color: orange; /* Change to your desired color during data transfer */
+  }
+  

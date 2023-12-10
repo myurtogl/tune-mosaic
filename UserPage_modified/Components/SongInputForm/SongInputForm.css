@@ -1,0 +1,53 @@
+.song-input-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .form-container {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+    padding: 20px;
+    width: 300px;
+    max-width: 100%;
+  }
+  
+  .song-input-form form {
+    display: flex;
+    flex-direction: column;
+    transition: all 0.5s ease-in-out;
+  }
+  
+  .song-input-form label {
+    margin: 10px 0;
+  }
+  
+  .song-input-form input {
+    transition: all 0.5s ease-in-out;
+  }
+  
+  .song-input-form button {
+    background-color: green;
+    color: #fff;
+    font-size: 12px;
+    padding: 10px 45px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.5s ease-in-out;
+  }
+  
+  .song-input-form button:hover {
+    background-color: #8aca8d;
+  }
+  
+  .song-input-form button.submitting {
+    background-color: orange; /* Change to your desired color during submission */
+  }
+  
