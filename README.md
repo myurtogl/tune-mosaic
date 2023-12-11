@@ -20,7 +20,7 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
    
    git clone https://github.com/your-username/liked-song-analysis.git
    
-For the backend setup:
+**For the backend setup:**
 
 1. Install the required Python packages by running the following command in your terminal:
 
@@ -32,7 +32,7 @@ For the backend setup:
 3.Modify the client_id and client_secret in the configuration file to match your Spotify API credentials. Update these values in the configuration file to ensure proper authentication and access to the Spotify API.
    
 
-For web: 
+**Web setup and usage:** 
 1. Install the dependencies by running the following command in your terminal:
 
    npm install
