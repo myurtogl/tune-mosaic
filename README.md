@@ -45,18 +45,22 @@ User Story:
 
 1.**Logging In:**
    -The user visits the web interface or mobile app and logs in using their credentials.
+
 2. **Inputting Liked Songs:**
    - After logging in, the user navigates to the Liked-Song input section.
    - They provide information about songs they like, including genres, artists, and specific        tracks.
    - Input can be entered as text, or a file containing song information can be used.
+
 3.**Musical Flavor Analysis:**
    -The system analyzes the provided liked-song data, identifying the user's musical preferences.
    -The user explores insightful charts and graphs depicting their genre preferences, artist        exploration, and more.
+
 4.**Personalized Recommendations:**
    -Leveraging the analyzed data, the system generates personalized music recommendations for       the user.
    -The user receives a list of suggested songs that align with their existing favorites.
      
-*Additional Notes:*
+
+**Additional Notes:**
 Encourage users to regularly update their liked-song data for more accurate recommendations.
 Highlight any specific features or settings that enhance the user experience.
 
