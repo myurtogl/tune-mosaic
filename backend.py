@@ -7,26 +7,17 @@ from werkzeug.utils import secure_filename
 import requests
 from base64 import b64encode
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+from urllib.parse import quote
 
 client_id = '0effabc56654497f80d57c69729f0161'
 client_secret = 'f2bbcaf09cb643d789d384ca508f8f70'
 
-# Encode as Base64
-credentialsSpotify = b64encode(f"{client_id}:{client_secret}".encode()).decode('utf-8')
-
-headers = {
-    'Authorization': f'Basic {credentialsSpotify}',
-    'Content-Type': 'application/x-www-form-urlencoded'
-}
-
-data = {
-    'grant_type': 'client_credentials'
-}
-
-response = requests.post('https://accounts.spotify.com/api/token', headers=headers, data=data)
-
-access_token = response.json().get('access_token')
+# Initialize Spotipy with the credentials manager
+client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
+sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 app = Flask(__name__)
 CORS(app)
@@ -197,6 +188,118 @@ def delete_album_songs():
     
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/top-songs', methods=['GET'])
+def get_top_songs():
+    user_id = request.args.get('user_id')  # Get user_id from query parameter
+    years = int(request.args.get('years', 1))  # Get the number of years (default to 1 if not provided)
+
+    # Calculate the cutoff date
+    cutoff_date = datetime.now() - timedelta(days=365 * years)
+    cutoff_date_str = cutoff_date.strftime('%Y-%m-%d')
+
+    # Reference to the user's songs
+    ref = db.reference(f'/users/{user_id}/songs')
+
+    try:
+        # Retrieve all songs
+        all_songs = ref.get()
+
+        if not all_songs:
+            return jsonify({'success': False, 'message': 'No songs found'}), 404
+
+        # Filter, sort songs, and collect song_ids
+        top_song_ids = [
+            song_id for song_id, song in sorted(all_songs.items(), key=lambda item: item[1].get('rating', 0), reverse=True)
+            if song.get('Release Date') >= cutoff_date_str and song.get('rating', 0) > 0
+        ][:10]  # Get top 10 song ids
+
+        return jsonify({'success': True, 'top_song_ids': top_song_ids})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/recommend-songs', methods=['GET'])
+def recommend_songs():
+    user_id = request.args.get('user_id')
+
+    user_id = user_id.strip()  # Removes leading/trailing whitespace and newlines
+    path = f'/users/{user_id}/songs'
+    print(f"Corrected Firebase Path: {path}")
+    ref = db.reference(path)
+
+    # Fetch top-rated songs from the database
+    ref = db.reference(f'/users/{user_id}/songs')
+    all_songs = ref.get()
+
+    # Filter songs with a rating of 5
+    top_songs = [song for song in all_songs.values() if song.get('rating') == 5]
+    print(top_songs)
+    if not top_songs:
+        return jsonify({'success': False, 'message': 'No top-rated songs found'}), 404
+
+    # Create lists to store track names and artist names
+    track_names = []
+    artist_names = []
+
+    # Extract track names and artist names from top-rated songs
+    for song in top_songs:
+        track_names.append(song['Name'])
+        artist_names.append(song['Artist'])
+
+    # Initialize a list to store recommendations
+    recommended_tracks = []
+
+    # Get track IDs for the top-rated songs and retrieve recommendations
+    for i in range(len(track_names)):
+        results = sp.search(q=f"track:{track_names[i]} artist:{artist_names[i]}", type='track')
+        if results['tracks']['items']:
+            track_id = results['tracks']['items'][0]['id']
+            recommendations = sp.recommendations(seed_tracks=[track_id])
+            recommended_tracks.extend([{'Name': track['name'], 'Artist': track['artists'][0]['name']} for track in recommendations['tracks']])
+            
+    for track in recommended_tracks:
+        song_name = track['Name']
+        artist_name = track['Artist']
+
+        # Search for the song
+        results = sp.search(q=f"track:{song_name} artist:{artist_name}", type='track')
+
+        if not results['tracks']['items']:
+            print(f"No results found for: {song_name} by {artist_name}")
+            continue  # Skip to the next iteration if no results
+
+        # Get the first track (assuming it's the most relevant)
+        track = results['tracks']['items'][0]
+
+        # Get artist ID from the track
+        artist_id = track['artists'][0]['id']
+
+        # Fetch the artist's details to get genre information
+        artist = sp.artist(artist_id)
+
+        # Get audio features for the track
+        audio_features = sp.audio_features(track['id'])[0]
+
+        # Prepare the song data
+        song_data = {
+            'Name': track['name'],
+            'Artist': track['artists'][0]['name'],
+            'Album': track['album']['name'],
+            'Release Date': track['album']['release_date'],
+            'Duration (ms)': track['duration_ms'],
+            'Preview URL': track['preview_url'],
+            'Genre': artist['genres'][0],  # Genre information from the artist
+            'Danceability': audio_features['danceability'],  # Audio feature
+            'Energy': audio_features['energy'],             # Audio feature
+            'Valence': audio_features['valence'],         # Audio feature (used for mood analysis)
+            'rating': 0,
+            'dateOfRating': '1-1-2001'
+        }
+
+        ref.push(song_data)
+
+    return jsonify({'success': True, 'recommended_tracks': recommended_tracks})
 
 if __name__ == '__main__':
     app.run(debug=True)
