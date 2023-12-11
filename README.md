@@ -33,9 +33,11 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
    
 
 **Web setup and usage:** 
+
 Prerequisites:
 
    *Node.js
+  
    *npm
 
 
@@ -56,9 +58,12 @@ Prerequisites:
 
 
 **For mobile setup and usage:**
+
 Prerequisites:
 
+
    *Xcode
+   
    *Swift
 
 1. Install the dependencies by running the following command in your terminal:
