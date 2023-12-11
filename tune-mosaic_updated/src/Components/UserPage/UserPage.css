@@ -1,0 +1,44 @@
+.user-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.forms-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  /* Adjust spacing between forms */
+  max-width: 0px;
+  width: 100%;
+  margin: 0 auto;
+  margin-left: 10px;
+  margin-bottom: 150px;
+}
+
+/* Ensure forms have equal width */
+.song-input-form,
+.batch-input-form,
+.database-transfer,
+.remove-item,
+.external-system-transfer {
+  flex: 1;
+  margin: 10px;
+  padding: 100px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Ensure that input boxes fill the width */
+.song-input-form input,
+.batch-input-form input,
+.database-transfer input,
+.remove-item input,
+.external-system-transfer input {
+  width: 100%;
+  margin: 5px 0;
+}

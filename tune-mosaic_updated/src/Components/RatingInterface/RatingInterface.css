@@ -1,0 +1,63 @@
+.home-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.home-container {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.home-header {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  margin-bottom: 10px;
+  padding: 8px;
+  font-size: 14px;
+}
+
+label {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.rating-display {
+  margin-top: 10px;
+}
+
+.home-button {
+  background-color: #3498db;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.home-container {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Add more styles as needed */
+
+.black-container {
+  background-color: black;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin-top: 100px; /* You can adjust this value as needed */
+}

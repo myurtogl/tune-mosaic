@@ -1,0 +1,49 @@
+.remove-item {
+  max-width: 600px;
+  margin: 16px;
+  align-self: center;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+label {
+  margin-bottom: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: green;
+  color: #fff;
+  font-size: 14px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.5s ease-in-out;
+}
+
+button.submitting {
+  background-color: orange;
+  border-color: #fff;
+  color: #fff;
+}
+
+.remove-item button:hover {
+  background-color: #8aca8d; /* Green hover color */
+}
