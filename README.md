@@ -31,21 +31,23 @@ For the backend setup:
 
 3.Modify the client_id and client_secret in the configuration file to match your Spotify API credentials. Update these values in the configuration file to ensure proper authentication and access to the Spotify API.
    
-   
-   
+
+For web: 
+1. Install the dependencies by running the following command in your terminal:
+
    npm install
 
-   To create a react project run the following command: npx create-react-app my-app
 
-4. *Configuration:* Configure the system to connect to your preferred music sources and platforms by editing the configuration files (config.json).
-
-5. *Run the System:* Start the system by running:
+2. Start the system by running:
    
    cd /directory_name
    npm start
    
 
-6. *Explore and Enjoy:* Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
+3. Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
+
+
+For mobile: 
 
 
 ## Use Case Scenario: Discovering Personalized Music Recommendations
