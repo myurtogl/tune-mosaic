@@ -1,214 +1,202 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import firebase_admin
 from firebase_admin import credentials, db, auth
 import os
 from werkzeug.utils import secure_filename
+import requests
+from base64 import b64encode
+import json
+from datetime import datetime
+
+client_id = '0effabc56654497f80d57c69729f0161'
+client_secret = 'f2bbcaf09cb643d789d384ca508f8f70'
+
+# Encode as Base64
+credentialsSpotify = b64encode(f"{client_id}:{client_secret}".encode()).decode('utf-8')
+
+headers = {
+    'Authorization': f'Basic {credentialsSpotify}',
+    'Content-Type': 'application/x-www-form-urlencoded'
+}
+
+data = {
+    'grant_type': 'client_credentials'
+}
+
+response = requests.post('https://accounts.spotify.com/api/token', headers=headers, data=data)
+
+access_token = response.json().get('access_token')
 
 app = Flask(__name__)
+CORS(app)
 
 # Initialize Firebase Admin SDK with your credentials
-cred = credentials.Certificate("/Users/nupelem/Desktop/tune-mosaic-firebase-adminsdk-twt4o-076c7f19ae.json")
-firebase_admin.initialize_app(cred, {'databaseURL': 'https://tune-mosaic.firebaseio.com/'})  # Replace 'tune-mosaic' with your actual Firebase project name
+cred = credentials.Certificate("/Users/zeynep/Downloads/tune-mosaic-firebase-adminsdk-twt4o-1a651b2af6.json")
+firebase_admin.initialize_app(cred, {'databaseURL': 'https://tune-mosaic-default-rtdb.firebaseio.com/'})  # Replace 'tune-mosaic' with your actual Firebase project name
+
+@app.route('/verify-token', methods=['POST'])
+def verify_token():
+    token = request.json.get('token')
+    try:
+        # Verify the token with Firebase Admin SDK
+        decoded_token = auth.verify_id_token(token)
+        return jsonify({'uid': decoded_token['uid']})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 401
+
+@app.route('/add-song', methods=['POST'])
+def add_song():
+    data = request.get_json()
+    user_id = data['user_id']
+    song_data = data['song_data']
+
+    ref = db.reference(f'/users/{user_id}/songs')
+    ref.push(song_data)
+
+    return jsonify({'success': True, 'message': 'Song added successfully'})
 
 # Define the allowed file extensions and the upload folder
-ALLOWED_EXTENSIONS = {'txt', 'csv', 'json'}
-UPLOAD_FOLDER = '/path/to/your/upload/folder'
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'txt'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB in bytes
 
 # Function to check if a file has an allowed extension
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Function to register a new user and store user data in Firebase
-def register_user(email, password, user_data):
+@app.route('/upload-songs', methods=['POST'])
+def upload_songs():
+    # Get the uploaded file
+    uploaded_file = request.files['file']
+
+    if not uploaded_file:
+        return jsonify({'success': False, 'message': 'No file uploaded'})
+
+    # Check if the file has an allowed extension
+    if not allowed_file(uploaded_file.filename):
+        return jsonify({'success': False, 'message': 'Invalid file format. Only .txt files are allowed'})
+
+    if uploaded_file.content_length is not None and uploaded_file.content_length > MAX_FILE_SIZE:
+        return jsonify({'success': False, 'message': 'File size exceeds the limit (5MB)'})
+
+    # Read the content of the uploaded file (assuming it's a text file)
+    file_content = uploaded_file.read()
+
+    # Parse the JSON data from the file content
     try:
-        # Create a new user using Firebase Authentication
-        user = auth.create_user(
-            email=email,
-            password=password,
-        )
+        song_data_list = json.loads(file_content)
+    except json.JSONDecodeError:
+        return jsonify({'success': False, 'message': 'Invalid JSON data in the file'})
 
-        # Store user data in the Firebase Realtime Database
-        user_id = user.uid
-        database = db.reference()
-        database.child('users').child(user_id).set(user_data)
+    # Get the user_id from the request (you can pass it as a header or a parameter)
+    user_id = request.form.get('user_id')
 
-        return {'success': True, 'message': 'User registered successfully'}
-    except Exception as e:
-        return {'success': False, 'message': str(e)}
+    # Add each song data to the user's data
+    ref = db.reference(f'/users/{user_id}/songs')
+    for song_data in song_data_list:
+        ref.push(song_data)
 
-# Function to add a single song manually
-def add_song(user_id, song_data):
+    return jsonify({'success': True, 'message': 'Songs added successfully'})
+
+@app.route('/rate-song', methods=['POST'])
+def rate_song():
+    data = request.get_json()
+    user_id = data['user_id']
+    song_id = data['song_id']  # Unique ID of the song
+    new_rating = data['rating']
+
+    # Reference to the specific song using the song ID
+    ref = db.reference(f'/users/{user_id}/songs/{song_id}')
+
     try:
-        # Add the song data to the user's collection in the Firebase Realtime Database
-        database = db.reference()
-        songs_ref = database.child('users').child(user_id).child('songs')
-        songs_ref.push().set(song_data)
+        # Check if the song exists
+        if ref.get() is None:
+            return jsonify({'success': False, 'message': 'Song not found'})
 
-        return {'success': True, 'message': 'Song added successfully'}
+        # Update the song's rating and date of rating
+        ref.update({
+            'rating': new_rating,
+            'dateOfRating': datetime.now().strftime('%Y-%m-%d')
+        })
+
+        return jsonify({'success': True, 'message': 'Song rating updated successfully'})
+    
     except Exception as e:
-        return {'success': False, 'message': str(e)}
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-# Function to add songs from a text file
-def add_songs_from_file(user_id, file_path):
+@app.route('/delete-song', methods=['DELETE'])
+def delete_song():
+    data = request.get_json()
+    user_id = data['user_id']
+    song_id = data['song_id']
+
+    # Reference to the specific song
+    ref = db.reference(f'/users/{user_id}/songs/{song_id}')
+
     try:
-        with open(file_path, 'r') as file:
-            # Read each line from the file and add the song to the database
-            for line in file:
-                song_data = {'name': line.strip()}
-                add_song(user_id, song_data)
+        # Check if the song exists
+        if ref.get() is None:
+            return jsonify({'success': False, 'message': 'Song not found'}), 404
 
-        return {'success': True, 'message': 'Songs added from file successfully'}
+        # Delete the song
+        ref.delete()
+
+        return jsonify({'success': True, 'message': 'Song deleted successfully'})
+    
     except Exception as e:
-        return {'success': False, 'message': str(e)}
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-# Function to add songs from a file upload
-def add_songs_from_upload(user_id, file):
+@app.route('/delete-performer-songs', methods=['DELETE'])
+def delete_performer_songs():
+    data = request.get_json()
+    user_id = data['user_id']
+    performer_name = data['performer']
+
+    # Reference to the user's songs
+    user_songs_ref = db.reference(f'/users/{user_id}/songs')
+
     try:
-        if file and allowed_file(file.filename):
-            # Save the uploaded file to the specified upload folder
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+        # Retrieve all songs
+        all_songs = user_songs_ref.get()
 
-            # Read the file and add songs to the database
-            add_songs_from_file(user_id, file_path)
+        if not all_songs:
+            return jsonify({'success': False, 'message': 'No songs found'}), 404
 
-            # Remove the uploaded file after processing (optional)
-            os.remove(file_path)
+        # Iterate over the songs and delete those by the specified performer
+        for song_id, song_details in all_songs.items():
+            if song_details.get('performer') == performer_name:
+                user_songs_ref.child(song_id).delete()
 
-            return {'success': True, 'message': 'Songs added from upload successfully'}
-        else:
-            return {'success': False, 'message': 'Invalid file format'}
-
+        return jsonify({'success': True, 'message': 'All songs by the performer have been deleted'})
+    
     except Exception as e:
-        return {'success': False, 'message': str(e)}
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-# Function to transfer songs from an external database
-def transfer_songs_from_external_db(user_id, external_db_info):
+@app.route('/delete-album-songs', methods=['DELETE'])
+def delete_album_songs():
+    data = request.get_json()
+    user_id = data['user_id']
+    album_name = data['albumName']
+
+    # Reference to the user's songs
+    user_songs_ref = db.reference(f'/users/{user_id}/songs')
+
     try:
-        # Extract necessary information from external_db_info
-        # (Replace these placeholders with the actual information needed to connect to the external database)
-        external_db_host = external_db_info['host']
-        external_db_user = external_db_info['user']
-        external_db_password = external_db_info['password']
-        external_db_name = external_db_info['db_name']
+        # Retrieve all songs
+        all_songs = user_songs_ref.get()
 
-        # Connect to the external database (use the appropriate library for your chosen database)
-        # For example, if using MySQL:
-        # import pymysql
-        # connection = pymysql.connect(host=external_db_host, user=external_db_user, password=external_db_password, db=external_db_name)
-        # cursor = connection.cursor()
+        if not all_songs:
+            return jsonify({'success': False, 'message': 'No songs found'}), 404
 
-        # Fetch song data from the external database
-        # Example: Fetch all songs from a hypothetical 'songs' table
-        # cursor.execute("SELECT * FROM songs")
-        # external_songs = cursor.fetchall()
+        # Iterate over the songs and delete those in the specified album
+        for song_id, song_details in all_songs.items():
+            if song_details.get('albumName') == album_name:
+                user_songs_ref.child(song_id).delete()
 
-        # Assuming you have fetched the songs from the external database,
-        # you can now add them to the user's collection in the Firebase Realtime Database
-        # database = db.reference()
-        # songs_ref = database.child('users').child(user_id).child('songs')
-
-        # for external_song in external_songs:
-        #     song_data = {'name': external_song['name'], 'artist': external_song['artist'], ...}
-        #     songs_ref.push().set(song_data)
-
-        # Close the connection to the external database
-        # connection.close()
-
-        return {'success': True, 'message': 'Songs transferred successfully from the external database'}
+        return jsonify({'success': True, 'message': 'All songs in the album have been deleted'})
+    
     except Exception as e:
-        return {'success': False, 'message': str(e)}
-
-# Function to rate a song
-def rate_song(user_id, song_id, rating):
-    try:
-        # Update the rating of the song in the Firebase Realtime Database
-        database = db.reference()
-        song_ref = database.child('users').child(user_id).child('songs').child(song_id)
-        song_ref.update({'rating': rating})
-
-        return {'success': True, 'message': 'Song rated successfully'}
-    except Exception as e:
-        return {'success': False, 'message': str(e)}
-
-# Function to remove a song and its related data
-def remove_song(user_id, song_id):
-    try:
-        # Remove the song from the user's collection in the Firebase Realtime Database
-        database = db.reference()
-        song_ref = database.child('users').child(user_id).child('songs').child(song_id)
-        song_ref.delete()
-
-        return {'success': True, 'message': 'Song removed successfully'}
-    except Exception as e:
-        return {'success': False, 'message': str(e)}
-
-# Function to remove an album and its related data
-def remove_album(user_id, album_id):
-    try:
-        # Remove the album from the user's collection in the Firebase Realtime Database
-        database = db.reference()
-        album_ref = database.child('users').child(user_id).child('albums').child(album_id)
-        album_ref.delete()
-
-        # Get all songs in the album
-        songs_ref = database.child('users').child(user_id).child('songs').order_by_child('album_id').equal_to(album_id).get()
-
-        # Remove each song in the album
-        for song_id in songs_ref:
-            remove_song(user_id, song_id)
-
-        return {'success': True, 'message': 'Album removed successfully'}
-    except Exception as e:
-        return {'success': False, 'message': str(e)}
-
-# Function to remove a performer and their related data
-def remove_performer(user_id, performer_id):
-    try:
-        # Remove the performer from the user's collection in the Firebase Realtime Database
-        database = db.reference()
-        performer_ref = database.child('users').child(user_id).child('performers').child(performer_id)
-        performer_ref.delete()
-
-        # Get all songs by the performer
-        songs_ref = database.child('users').child(user_id).child('songs').order_by_child('performer_id').equal_to(performer_id).get()
-
-        # Remove each song by the performer
-        for song_id in songs_ref:
-            remove_song(user_id, song_id)
-
-        return {'success': True, 'message': 'Performer removed successfully'}
-    except Exception as e:
-        return {'success': False, 'message': str(e)}
-
-# Endpoint to remove a song, album, or performer
-@app.route('/remove-item', methods=['POST'])
-def remove_item_endpoint():
-    try:
-        data = request.get_json()
-        user_id = data['user_id']
-        item_type = data['item_type']  # 'song', 'album', or 'performer'
-        item_id = data['item_id']
-
-        if item_type == 'song':
-            removal_result = remove_song(user_id, item_id)
-        elif item_type == 'album':
-            removal_result = remove_album(user_id, item_id)
-        elif item_type == 'performer':
-            removal_result = remove_performer(user_id, item_id)
-        else:
-            return jsonify({'success': False, 'message': 'Invalid item type'})
-
-        if removal_result['success']:
-            return jsonify({'success': True, 'message': 'Item removed successfully'})
-        else:
-            return jsonify({'success': False, 'message': removal_result['message']})
-
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
