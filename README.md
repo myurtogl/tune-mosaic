@@ -41,10 +41,12 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
 2. Start the system by running:
    
    cd /directory_name
+
+
    npm start
    
 
-3. Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
+4. Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
 
 
 For mobile: 
