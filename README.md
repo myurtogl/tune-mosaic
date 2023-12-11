@@ -33,6 +33,12 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
    
 
 **Web setup and usage:** 
+Prerequisites:
+
+   *Node.js
+   *npm
+
+
 1. Install the dependencies by running the following command in your terminal:
 
    npm install
@@ -46,10 +52,23 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
    npm start
    
 
-4. Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
+3. Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
 
 
-For mobile: 
+**For mobile setup and usage:**
+Prerequisites:
+
+   *Xcode
+   *Swift
+
+1. Install the dependencies by running the following command in your terminal:
+
+      pod install
+
+2. Open the Xcode project by the following command:
+
+      open YourApp.xcworkspace
+
 
 
 ## Use Case Scenario: Discovering Personalized Music Recommendations
