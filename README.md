@@ -15,15 +15,23 @@ In this project, we aim to:
 ## Getting Started
 
 To get started with the Liked-Song Analysis and Recommendation System, follow these steps:
-
-1. *Clone the Repository:* Clone this repository to your local machine using the following command:
+ *Clone the Repository:* Clone this repository to your local machine using the following command:
 
    
    git clone https://github.com/your-username/liked-song-analysis.git
    
+For the backend setup:
 
-2. *Install Dependencies:* Navigate to the project directory and install the required dependencies by running:
+1. Install the required Python packages by running the following command in your terminal:
 
+   pip install -r requirements.txt
+   
+2.Update the Firebase authentication JSON file with your own credentials. Replace the existing "cred.json" file with your Firebase authentication JSON file.
+
+
+3.Modify the client_id and client_secret in the configuration file to match your Spotify API credentials. Update these values in the configuration file to ensure proper authentication and access to the Spotify API.
+   
+   
    
    npm install
 
