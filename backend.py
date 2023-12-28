@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from urllib.parse import quote
-
 client_id = '0effabc56654497f80d57c69729f0161'
 client_secret = 'f2bbcaf09cb643d789d384ca508f8f70'
 
@@ -22,8 +21,8 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 app = Flask(__name__)
 CORS(app)
 
-# Initialize Firebase Admin SDK with your credentials
-cred = credentials.Certificate("/Users/zeynep/Downloads/tune-mosaic-firebase-adminsdk-twt4o-1a651b2af6.json")
+ #Initialize Firebase Admin SDK with your credentials
+cred = credentials.Certificate("/Users/nupelem/Desktop/tune-mosaic-firebase-adminsdk-twt4o-076c7f19ae.json")
 firebase_admin.initialize_app(cred, {'databaseURL': 'https://tune-mosaic-default-rtdb.firebaseio.com/'})  # Replace 'tune-mosaic' with your actual Firebase project name
 
 @app.route('/verify-token', methods=['POST'])
@@ -78,7 +77,7 @@ def upload_songs():
         song_data_list = json.loads(file_content)
     except json.JSONDecodeError:
         return jsonify({'success': False, 'message': 'Invalid JSON data in the file'})
-
+    
     # Get the user_id from the request (you can pass it as a header or a parameter)
     user_id = request.form.get('user_id')
 
@@ -86,9 +85,8 @@ def upload_songs():
     ref = db.reference(f'/users/{user_id}/songs')
     for song_data in song_data_list:
         ref.push(song_data)
-
-    return jsonify({'success': True, 'message': 'Songs added successfully'})
-
+        return jsonify({'success': True, 'message': 'Songs added successfully'})
+    
 @app.route('/rate-song', methods=['POST'])
 def rate_song():
     data = request.get_json()
@@ -111,7 +109,7 @@ def rate_song():
         })
 
         return jsonify({'success': True, 'message': 'Song rating updated successfully'})
-    
+
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
@@ -133,7 +131,7 @@ def delete_song():
         ref.delete()
 
         return jsonify({'success': True, 'message': 'Song deleted successfully'})
-    
+
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
@@ -159,7 +157,7 @@ def delete_performer_songs():
                 user_songs_ref.child(song_id).delete()
 
         return jsonify({'success': True, 'message': 'All songs by the performer have been deleted'})
-    
+
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
@@ -185,7 +183,43 @@ def delete_album_songs():
                 user_songs_ref.child(song_id).delete()
 
         return jsonify({'success': True, 'message': 'All songs in the album have been deleted'})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
     
+    # This route allows a user to follow another user.
+@app.route('/follow-user', methods=['POST'])
+def follow_user():
+    # Extracts data from the incoming request in JSON format
+    data = request.get_json()
+    follower_id = data['follower_id']  # UserID of the person who follows
+    followed_id = data['followed_id']  # UserID of the person being followed
+
+    # Firebase database references to the following and followers lists
+    follower_ref = db.reference(f'/users/{follower_id}/following')
+    followed_ref = db.reference(f'/users/{followed_id}/followers')
+
+    try:
+        # Retrieve and update the 'following' list for the follower
+        following = follower_ref.get()
+        if following is None:
+            following = []
+        if followed_id not in following:
+            following.append(followed_id)
+            follower_ref.set(following)
+
+        # Retrieve and update the 'followers' list for the followed user
+        followers = followed_ref.get()
+        if followers is None:
+            followers = []
+        if follower_id not in followers:
+            followers.append(follower_id)
+            followed_ref.set(followers)
+
+        # Return a success message
+        return jsonify({'success': True, 'message': 'Follow action successful'})
+
+    # Error handling in case of exceptions
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
@@ -215,7 +249,7 @@ def get_top_songs():
         ][:10]  # Get top 10 song ids
 
         return jsonify({'success': True, 'top_song_ids': top_song_ids})
-    
+
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
@@ -257,7 +291,7 @@ def recommend_songs():
             track_id = results['tracks']['items'][0]['id']
             recommendations = sp.recommendations(seed_tracks=[track_id])
             recommended_tracks.extend([{'Name': track['name'], 'Artist': track['artists'][0]['name']} for track in recommendations['tracks']])
-            
+
     for track in recommended_tracks:
         song_name = track['Name']
         artist_name = track['Artist']
@@ -303,3 +337,7 @@ def recommend_songs():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
+
+
+
