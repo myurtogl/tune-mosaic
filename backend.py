@@ -8,9 +8,11 @@ import requests
 from base64 import b64encode
 import json
 from datetime import datetime, timedelta
+from collections import Counter
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from urllib.parse import quote
+from itertools import combinations
 client_id = '0effabc56654497f80d57c69729f0161'
 client_secret = 'f2bbcaf09cb643d789d384ca508f8f70'
 
@@ -22,7 +24,7 @@ app = Flask(__name__)
 CORS(app)
 
  #Initialize Firebase Admin SDK with your credentials
-cred = credentials.Certificate("/Users/nupelem/Desktop/tune-mosaic-firebase-adminsdk-twt4o-076c7f19ae.json")
+cred = credentials.Certificate("/Users/ceylinekinci/Desktop/tune-mosaic-firebase-adminsdk-twt4o-1a651b2af6.json")
 firebase_admin.initialize_app(cred, {'databaseURL': 'https://tune-mosaic-default-rtdb.firebaseio.com/'})  # Replace 'tune-mosaic' with your actual Firebase project name
 
 @app.route('/verify-token', methods=['POST'])
@@ -45,8 +47,8 @@ def add_song():
     ref.push(song_data)
 
     return jsonify({'success': True, 'message': 'Song added successfully'})
-
 # Define the allowed file extensions and the upload folder
+
 ALLOWED_EXTENSIONS = {'txt'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB in bytes
 
@@ -334,6 +336,76 @@ def recommend_songs():
         ref.push(song_data)
 
     return jsonify({'success': True, 'recommended_tracks': recommended_tracks})
+
+
+@app.route('/recommend-friends-songs', methods=['GET'])
+def recommend_friends_songs():
+    user_id = request.args.get('user_id')
+
+    # Reference to the user's followers and following lists
+    followers_ref = db.reference(f'/users/{user_id}/followers')
+    following_ref = db.reference(f'/users/{user_id}/following')
+    
+    try:
+        followers_raw = followers_ref.get() or []  # If None, set to empty list
+        following_raw = following_ref.get() or []  # If None, set to empty list
+
+        print(f"Followers raw data: {followers_raw}")
+        print(f"Following raw data: {following_raw}")
+
+        # Convert to sets for intersection
+        followers_set = set(followers_raw)
+        following_set = set(following_raw)
+
+        print(f"Followers: {followers_set}")
+        print(f"Following: {following_set}")
+
+        if not followers_set or not following_set:
+            return jsonify({'success': False, 'message': 'No followers or following found'}), 404
+
+        #   Find mutual friends (people who follow the user and are followed by the user)
+        mutual_friends = list(followers_set.intersection(following_set))
+
+        print(f"Mutual Friends: {mutual_friends}")
+
+        if not mutual_friends:
+            return jsonify({'success': False, 'message': 'No mutual friends found'}), 404
+
+        # Initialize a list to store friend recommendations
+        friend_recommendations = []
+
+        for friend_id in mutual_friends:
+            # Get the friend's songs
+            friend_songs_ref = db.reference(f'/users/{friend_id}/songs')
+            friend_songs = friend_songs_ref.get()
+            
+
+            print(f"Friend Songs for {friend_id}: {friend_songs}")
+
+            if friend_songs is None or not isinstance(friend_songs, dict):
+                friend_songs = {}
+
+            friend_top_songs = [
+                {'Name': song['Name'], 'Artist': song['Artist']} 
+                for song in friend_songs.values() 
+                if isinstance(song, dict) and song.get('rating') in [1,2,3,4,5]
+            ]
+            # Add friend recommendation with source friend identity
+            friend_recommendations.append({
+                'friend_id': friend_id,
+                'top_songs': friend_top_songs
+            })
+
+            user_songs_ref = db.reference(f'/users/{user_id}/songs')
+            for song in friend_top_songs:
+                user_songs_ref.push().set(song)
+        
+        return jsonify({'success': True, 'friend_recommendations': friend_recommendations})
+
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
