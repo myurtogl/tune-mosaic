@@ -430,7 +430,11 @@ Responses:
 404 Not Found: Returns an error message if no friends or songs are found.
 500 Internal Server Error: Returns an error message if an exception occurs during the process.
 ## Sequence Diagrams
-
+ Google Sign-In Flow
 ![Google Sign-In Flow](https://github.com/myurtogl/tune-mosaic/assets/127950404/b3ca1cd7-dcb6-455b-bb61-86732c0d1a90)
+
+
+ Group Management Flow
+![Enhanced Group Management Flow](https://github.com/myurtogl/tune-mosaic/assets/127950404/758d7fc9-63ce-4309-8b88-073b00655e5c)
 
    
