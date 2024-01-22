@@ -329,3 +329,108 @@ Feature: Diagrams
     Given the system's complexity and the need for clear documentation
     When creating or updating system diagrams
     Then they should accurately represent the system's architecture, data flow, and component interactions
+## API Documentation
+1. User Authentication and Registration
+1.1 Verify Token
+Endpoint: /verify-token
+Method: POST
+Description: Verifies a user's ID token for login attempts or registers a new user if no token is provided.
+Request Body:
+token (optional): The ID token from the client side.
+email, password, username (required for registration): User credentials for account creation.
+Responses:
+200 OK:
+On successful login: Returns the UID of the logged-in user.
+On successful registration: Returns a custom token for the registered user.
+401 Unauthorized: Returns an error message if the token is invalid or registration details are incomplete or incorrect.
+1.2 Google Sign-In
+Endpoint: /google-signin
+Method: POST
+Description: Authenticates users via Google Sign-In, creating a new user record if it's the first login.
+Request Body:
+idToken: The ID token received from the Google Sign-In SDK on the client.
+Responses:
+200 OK: Returns a success message with the user's UID.
+401 Unauthorized: Returns an error message if the ID token is invalid.
+2. Song Management
+2.1 Add Song
+Endpoint: /add-song
+Method: POST
+Description: Adds a new song to the user's collection.
+Request Body:
+user_id: The ID of the user adding the song.
+song_data: The details of the song (e.g., name, artist, album).
+Responses:
+200 OK: Returns a success message with the newly added song's ID.
+400 Bad Request: Returns an error message if user_id or song_data is missing.
+404 Not Found: Returns an error message if the user does not exist.
+2.2 Rate Song
+Endpoint: /rate-song
+Method: POST
+Description: Updates the rating of a song in the user's collection.
+Request Body:
+user_id: The ID of the user who owns the song.
+song_id: The ID of the song to be rated.
+rating: The new rating for the song.
+Responses:
+200 OK: Returns a success message stating that the song rating was updated.
+500 Internal Server Error: Returns an error message if an exception occurs during the process.
+2.3 Delete Song
+Endpoint: /delete-song
+Method: DELETE
+Description: Removes a song from the user's collection.
+Request Body:
+user_id: The ID of the user who owns the song.
+song_id: The ID of the song to be deleted.
+Responses:
+200 OK: Returns a success message stating that the song was deleted.
+404 Not Found: Returns an error message if the song is not found.
+500 Internal Server Error: Returns an error message if an exception occurs during the process.
+3. Social Features
+3.1 Follow User
+Endpoint: /follow-user
+Method: POST
+Description: Allows a user to follow another user, updating both their 'following' and 'followers' lists.
+Request Body:
+follower_id: The ID of the user who wants to follow.
+followed_id: The ID of the user to be followed.
+Responses:
+200 OK: Returns a success message stating the follow action was successful.
+500 Internal Server Error: Returns an error message if an exception occurs during the process.
+3.2 Unfollow User
+Endpoint: /unfollow-user
+Method: POST
+Description: Allows a user to unfollow another user, updating both their 'following' and 'followers' lists.
+Request Body:
+active_user_id: The ID of the user who initiates the unfollow.
+unfollow_user_id: The ID of the user to be unfollowed.
+Responses:
+200 OK: Returns a success message stating the unfollow action was successful.
+500 Internal Server Error: Returns an error message if an exception occurs during the process.
+4. Music Recommendation
+4.1 Recommend Songs
+Endpoint: /recommend-songs
+Method: GET
+Description: Provides song recommendations based on the user's top-rated songs.
+Request Parameters:
+user_id: The ID of the user for whom recommendations are to be generated.
+Responses:
+200 OK: Returns a list of recommended songs.
+404 Not Found: Returns an error message if no top-rated songs are found.
+500 Internal Server Error: Returns an error message if an exception occurs during the process.
+4.2 Recommend Friends' Songs
+Endpoint: /recommend-friends-songs
+Method: GET
+Description: Provides song recommendations based on the songs rated by the user's friends.
+Request Parameters:
+user_id: The ID of the user for whom friend-based recommendations are to be generated.
+Responses:
+200 OK: Returns a list of recommended songs from friends.
+400 Bad Request: Returns an error message if user_id is missing.
+404 Not Found: Returns an error message if no friends or songs are found.
+500 Internal Server Error: Returns an error message if an exception occurs during the process.
+## Sequence Diagrams
+
+![Google Sign-In Flow](https://github.com/myurtogl/tune-mosaic/assets/127950404/b3ca1cd7-dcb6-455b-bb61-86732c0d1a90)
+
+   
