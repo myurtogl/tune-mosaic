@@ -30,32 +30,6 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
 
 
 3.Modify the client_id and client_secret in the configuration file to match your Spotify API credentials. Update these values in the configuration file to ensure proper authentication and access to the Spotify API.
-   
-
-**Web setup and usage:** 
-
-Prerequisites:
-
-   *Node.js
-  
-   *npm
-
-
-1. Install the dependencies by running the following command in your terminal:
-
-   npm install
-
-
-2. Start the system by running:
-   
-   cd /directory_name
-
-
-   npm start
-   
-
-3. Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
-
 
 **For mobile setup and usage:**
 
@@ -73,8 +47,6 @@ Prerequisites:
 2. Open the Xcode project by the following command:
 
       open YourApp.xcworkspace
-
-
 
 ## Use Case Scenario: Discovering Personalized Music Recommendations
 User Story: 
