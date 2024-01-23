@@ -24,17 +24,15 @@ To get started with the Liked-Song Analysis and Recommendation System, follow th
 
 2. *Install Dependencies:* Navigate to the project directory and install the required dependencies by running:
 
-   
-   npm install
 
-   To create a react project run the following command: npx create-react-app my-app
+  pip install -r requirements.txt
+  
 
 4. *Configuration:* Configure the system to connect to your preferred music sources and platforms by editing the configuration files (config.json).
 
 5. *Run the System:* Start the system by running:
    
    cd /directory_name
-   npm start
-   
+   python backend.py   
 
-6. *Explore and Enjoy:* Access the web interface at [http://localhost:3000](http://localhost:3000) to explore your musical analysis and receive personalized recommendations.
+6. *Explore and Enjoy:* Access the backend at [http://localhost:5000](http://localhost:5000) to explore your musical analysis and receive personalized recommendations.
